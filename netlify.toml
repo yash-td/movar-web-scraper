@@ -5,6 +5,9 @@
   # Netlify Functions directory
   functions = "netlify/functions"
 
+  # No build command needed for static site
+  command = ""
+
 # Redirect rules
 [[redirects]]
   from = "/*"
