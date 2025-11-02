@@ -365,7 +365,7 @@
 
             <div class="download-info">
                 <h4>💡 How to Download</h4>
-                <p>Click "Download All as ZIP" to bundle all files into a single ZIP file, or use individual download buttons below.</p>
+                <p>Click "Download All as ZIP" to bundle files into a single ZIP file (works with files <10MB). For large files or if download fails, use "Copy All Links" to download manually.</p>
 
                 <div class="download-buttons">
                     <button class="btn btn-success" onclick="downloadAllAsZip()" id="zip-btn">📦 Download All as ZIP</button>
@@ -552,14 +552,18 @@
                     progressStatus.textContent = `Downloading ${i + 1} of ${scrapedLinks.length}: ${link.text.substring(0, 40)}...`;
 
                     try {
-                        // Fetch file
-                        const response = await fetch(link.url, {
-                            mode: 'cors',
-                            cache: 'no-cache'
+                        // Use proxy function to bypass CORS
+                        const response = await fetch('/.netlify/functions/download-proxy', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ url: link.url })
                         });
 
                         if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}`);
+                            const error = await response.json();
+                            throw new Error(error.error || `HTTP ${response.status}`);
                         }
 
                         // Get file as blob
@@ -580,7 +584,7 @@
                 }
 
                 if (completed === 0) {
-                    throw new Error('Could not download any files. Most files are blocked by CORS policy.');
+                    throw new Error('Could not download any files. Files may be too large, protected, or from slow servers.');
                 }
 
                 // Generate ZIP file
@@ -611,11 +615,11 @@
                     progressBar.style.width = '0%';
                 }, 3000);
 
-                showAlert(`Successfully downloaded ${completed} files as ZIP!${failed > 0 ? ` ${failed} files failed due to CORS restrictions.` : ''}`, 'success');
+                showAlert(`Successfully downloaded ${completed} files as ZIP!${failed > 0 ? ` (${failed} files failed - may be too large or protected)` : ''}`, 'success');
 
             } catch (error) {
                 progressStatus.textContent = '✗ Download failed';
-                showAlert('Error: ' + error.message + '\n\nNote: Some websites block downloads due to CORS policy. Try "Copy All Links" instead.', 'error');
+                showAlert('Error: ' + error.message + '\n\nLimitations: Files must be <10MB and download within 8 seconds. Protected or very slow servers may fail. Try "Copy All Links" as alternative.', 'error');
 
                 setTimeout(() => {
                     progressContainer.style.display = 'none';
