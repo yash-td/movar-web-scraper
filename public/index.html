@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movar Web Scraper - Universal Document Downloader</title>
+    <title>Movar Web Scraper | Universal Document Downloader</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * {
@@ -14,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #131b30;
             min-height: 100vh;
             padding: 20px;
         }
@@ -30,15 +30,24 @@
             margin-bottom: 30px;
         }
 
+        .header-logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 8px rgba(0, 115, 255, 0.3));
+        }
+
         .header h1 {
             font-size: 2.8em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #ffffff;
         }
 
         .header p {
             font-size: 1.2em;
-            opacity: 0.95;
+            opacity: 0.9;
+            color: #a0aec0;
         }
 
         .card {
@@ -76,12 +85,12 @@
         input[type="url"]:focus,
         select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #0073ff;
+            box-shadow: 0 0 0 3px rgba(0, 115, 255, 0.1);
         }
 
         .btn {
-            background: #667eea;
+            background: #0073ff;
             color: white;
             border: none;
             padding: 14px 28px;
@@ -94,9 +103,9 @@
         }
 
         .btn:hover {
-            background: #5568d3;
+            background: #0060d9;
             transform: translateY(-2px);
-            box-shadow: 0 7px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 7px 20px rgba(0, 115, 255, 0.5);
         }
 
         .btn:disabled {
@@ -115,14 +124,14 @@
         }
 
         .btn-download {
-            background: #3b82f6;
+            background: #0073ff;
             padding: 10px 16px;
             font-size: 14px;
             margin: 2px;
         }
 
         .btn-download:hover {
-            background: #2563eb;
+            background: #0060d9;
         }
 
         .pagination-options {
@@ -154,7 +163,7 @@
 
         .stat-card h3 {
             font-size: 2.5em;
-            color: #667eea;
+            color: #0073ff;
             margin-bottom: 8px;
         }
 
@@ -195,7 +204,7 @@
         }
 
         .file-extension {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0073ff;
             color: white;
             padding: 6px 12px;
             border-radius: 6px;
@@ -204,6 +213,7 @@
             min-width: 55px;
             text-align: center;
             text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0, 115, 255, 0.3);
         }
 
         .file-name {
@@ -219,7 +229,7 @@
 
         .spinner {
             border: 5px solid #f3f3f3;
-            border-top: 5px solid #667eea;
+            border-top: 5px solid #0073ff;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -308,7 +318,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌐 Movar Web Scraper</h1>
+            <img src="https://movar-reports.netlify.app/lovable-uploads/5d0a6ccd-eb16-4121-aef0-d583fe0bd181.png" alt="Movar Logo" class="header-logo">
+            <h1>Movar Web Scraper</h1>
             <p>Universal Document Downloader - Extract files from any webpage</p>
         </div>
 
@@ -375,7 +386,7 @@
 
                 <div id="download-progress" style="display: none; margin-top: 15px;">
                     <div style="background: #e0e0e0; border-radius: 10px; height: 30px; overflow: hidden;">
-                        <div id="download-progress-bar" style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;"></div>
+                        <div id="download-progress-bar" style="background: #0073ff; height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;"></div>
                     </div>
                     <p id="download-status" style="margin-top: 10px; text-align: center; color: #666;"></p>
                 </div>
@@ -385,7 +396,7 @@
         <div id="alert-container"></div>
 
         <div class="footer">
-            <p>Built with ❤️ by Movar | <a href="https://github.com" target="_blank">GitHub</a></p>
+            <p>Powered by <strong>Movar</strong> | <a href="https://github.com/yash-td/movar-web-scraper" target="_blank">GitHub</a></p>
         </div>
     </div>
 
