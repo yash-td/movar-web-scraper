@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movar Web Scraper - Universal Document Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 35px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 15px;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            box-shadow: 0 7px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-download {
+            background: #3b82f6;
+            padding: 10px 16px;
+            font-size: 14px;
+            margin: 2px;
+        }
+
+        .btn-download:hover {
+            background: #2563eb;
+        }
+
+        .pagination-options {
+            display: none;
+        }
+
+        .pagination-options.active {
+            display: block;
+        }
+
+        #results {
+            display: none;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-card h3 {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        .file-list {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 18px;
+            background: #fafafa;
+        }
+
+        .file-item {
+            padding: 14px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .file-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateX(4px);
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-extension {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 700;
+            min-width: 55px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .file-name {
+            flex: 1;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 2px solid #fcc;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #2d5;
+            border: 2px solid #cfc;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 2px solid #90caf9;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .download-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .download-info h4 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        .download-info p {
+            color: #424242;
+            line-height: 1.6;
+        }
+
+        .download-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.9;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 Movar Web Scraper</h1>
+            <p>Universal Document Downloader - Extract files from any webpage</p>
+        </div>
+
+        <!-- Scraper Form -->
+        <div class="card" id="scraper-form">
+            <h2>📋 Step 1: Configure Your Scrape</h2>
+            <br>
+
+            <div class="form-group">
+                <label for="url">🔗 Webpage URL</label>
+                <input type="url" id="url" placeholder="https://example.com/documents" required>
+            </div>
+
+            <div class="form-group">
+                <label for="pagination">📄 Pagination Mode</label>
+                <select id="pagination">
+                    <option value="single">Single page only</option>
+                    <option value="manual">Manual pagination (multiple pages)</option>
+                </select>
+            </div>
+
+            <div class="pagination-options" id="manual-pagination">
+                <div class="form-group">
+                    <label for="url-pattern">🔗 URL Pattern (use {page} for page number)</label>
+                    <input type="text" id="url-pattern" placeholder="https://example.com/docs/page/{page}">
+                </div>
+                <div class="form-group">
+                    <label for="page-range">📊 Page Range (e.g., 1-5 or 1,2,3) - Max 10 pages</label>
+                    <input type="text" id="page-range" placeholder="1-5" value="1-5">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="extensions">🎯 Filter by Extensions (optional, comma-separated)</label>
+                <input type="text" id="extensions" placeholder="pdf, doc, zip">
+            </div>
+
+            <button class="btn" id="scrape-btn" onclick="scrapeWebpage()">🔍 Scrape Links</button>
+
+            <div class="loading hidden" id="loading">
+                <div class="spinner"></div>
+                <p>Scraping webpage...</p>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="card" id="results">
+            <h2>📚 Step 2: Found Files</h2>
+            <br>
+
+            <div class="stats" id="stats"></div>
+
+            <div class="file-list" id="file-list"></div>
+
+            <div class="download-info">
+                <h4>💡 How to Download</h4>
+                <p>Click on individual download buttons below to save files to your computer. For bulk downloads, use the "Download All in Tabs" button (note: your browser may block multiple downloads).</p>
+
+                <div class="download-buttons">
+                    <button class="btn btn-success" onclick="downloadAllInTabs()">⬇️ Download All in Tabs</button>
+                    <button class="btn" onclick="copyAllLinks()">📋 Copy All Links</button>
+                    <button class="btn" onclick="exportAsText()">💾 Export as Text File</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <div class="footer">
+            <p>Built with ❤️ by Movar | <a href="https://github.com" target="_blank">GitHub</a></p>
+        </div>
+    </div>
+
+    <script>
+        let scrapedLinks = [];
+
+        // Pagination mode change handler
+        document.getElementById('pagination').addEventListener('change', function() {
+            const manualOptions = document.getElementById('manual-pagination');
+            if (this.value === 'manual') {
+                manualOptions.classList.add('active');
+            } else {
+                manualOptions.classList.remove('active');
+            }
+        });
+
+        function showAlert(message, type = 'error') {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 6000);
+        }
+
+        async function scrapeWebpage() {
+            const url = document.getElementById('url').value;
+            const pagination = document.getElementById('pagination').value;
+            const extensions = document.getElementById('extensions').value;
+
+            if (!url) {
+                showAlert('Please enter a URL');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('scrape-btn').disabled = true;
+
+            // Prepare request data
+            const data = {
+                url: url,
+                pagination_mode: pagination
+            };
+
+            if (pagination === 'manual') {
+                data.url_pattern = document.getElementById('url-pattern').value || url;
+                data.page_range = document.getElementById('page-range').value || '1';
+            }
+
+            if (extensions) {
+                data.extensions = extensions.split(',').map(e => e.trim());
+            }
+
+            try {
+                const response = await fetch('/.netlify/functions/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Scraping failed');
+                }
+
+                scrapedLinks = result.links;
+                displayResults(result);
+                showAlert(`Successfully found ${result.count} files!`, 'success');
+
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('scrape-btn').disabled = false;
+            }
+        }
+
+        function displayResults(result) {
+            if (result.count === 0) {
+                showAlert('No downloadable files found!', 'info');
+                return;
+            }
+
+            // Show results section
+            document.getElementById('results').style.display = 'block';
+
+            // Display statistics
+            const typeBreakdown = Object.entries(result.statistics)
+                .map(([ext, count]) => `${ext.toUpperCase()}: ${count}`)
+                .join(' | ');
+
+            const statsHtml = `
+                <div class="stat-card">
+                    <h3>${result.count}</h3>
+                    <p>Total Files Found</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${Object.keys(result.statistics).length}</h3>
+                    <p>File Types</p>
+                </div>
+            `;
+            document.getElementById('stats').innerHTML = statsHtml;
+
+            // Display file list with download buttons
+            let filesHtml = '';
+            result.links.forEach((link, index) => {
+                const safeUrl = link.url.replace(/"/g, '&quot;');
+                filesHtml += `
+                    <div class="file-item">
+                        <span class="file-extension">${link.extension}</span>
+                        <span class="file-name">${escapeHtml(link.text)}</span>
+                        <a href="${safeUrl}" download class="btn btn-download" target="_blank">⬇️ Download</a>
+                    </div>
+                `;
+            });
+            document.getElementById('file-list').innerHTML = filesHtml;
+
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function downloadAllInTabs() {
+            if (scrapedLinks.length === 0) {
+                showAlert('No files to download', 'info');
+                return;
+            }
+
+            if (scrapedLinks.length > 20) {
+                if (!confirm(`This will open ${scrapedLinks.length} download tabs. Your browser may block some. Continue?`)) {
+                    return;
+                }
+            }
+
+            scrapedLinks.forEach((link, index) => {
+                setTimeout(() => {
+                    const a = document.createElement('a');
+                    a.href = link.url;
+                    a.download = '';
+                    a.target = '_blank';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }, index * 300); // Stagger downloads
+            });
+
+            showAlert(`Started downloading ${scrapedLinks.length} files. Check your browser downloads!`, 'success');
+        }
+
+        function copyAllLinks() {
+            if (scrapedLinks.length === 0) {
+                showAlert('No links to copy', 'info');
+                return;
+            }
+
+            const linksText = scrapedLinks.map(link => link.url).join('\n');
+
+            navigator.clipboard.writeText(linksText).then(() => {
+                showAlert(`Copied ${scrapedLinks.length} links to clipboard!`, 'success');
+            }).catch(() => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = linksText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showAlert(`Copied ${scrapedLinks.length} links to clipboard!`, 'success');
+            });
+        }
+
+        function exportAsText() {
+            if (scrapedLinks.length === 0) {
+                showAlert('No links to export', 'info');
+                return;
+            }
+
+            const content = scrapedLinks.map((link, i) =>
+                `${i + 1}. [${link.extension.toUpperCase()}] ${link.text}\n   ${link.url}\n`
+            ).join('\n');
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'scraped-links.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showAlert('Downloaded links as text file!', 'success');
+        }
+
+        // Example usage hint
+        window.addEventListener('load', () => {
+            // Optional: Show example on first load
+            if (!localStorage.getItem('visited')) {
+                setTimeout(() => {
+                    showAlert('💡 Tip: Try scraping https://example.com/documents to get started!', 'info');
+                    localStorage.setItem('visited', 'true');
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

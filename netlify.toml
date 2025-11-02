@@ -1,0 +1,28 @@
+[build]
+  # Directory that contains the built files
+  publish = "public"
+
+  # Netlify Functions directory
+  functions = "netlify/functions"
+
+# Redirect rules
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for CORS
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+
+# Function settings
+[functions]
+  # Python runtime
+  python_version = "3.11"
+
+  # Increase timeout to 26 seconds (max for Netlify)
+  timeout = 26
