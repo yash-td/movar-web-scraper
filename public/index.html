@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movar Web Scraper - Universal Document Downloader</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -364,12 +365,19 @@
 
             <div class="download-info">
                 <h4>💡 How to Download</h4>
-                <p>Click on individual download buttons below to save files to your computer. For bulk downloads, use the "Download All in Tabs" button (note: your browser may block multiple downloads).</p>
+                <p>Click "Download All as ZIP" to bundle all files into a single ZIP file, or use individual download buttons below.</p>
 
                 <div class="download-buttons">
-                    <button class="btn btn-success" onclick="downloadAllInTabs()">⬇️ Download All in Tabs</button>
+                    <button class="btn btn-success" onclick="downloadAllAsZip()" id="zip-btn">📦 Download All as ZIP</button>
                     <button class="btn" onclick="copyAllLinks()">📋 Copy All Links</button>
                     <button class="btn" onclick="exportAsText()">💾 Export as Text File</button>
+                </div>
+
+                <div id="download-progress" style="display: none; margin-top: 15px;">
+                    <div style="background: #e0e0e0; border-radius: 10px; height: 30px; overflow: hidden;">
+                        <div id="download-progress-bar" style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;"></div>
+                    </div>
+                    <p id="download-status" style="margin-top: 10px; text-align: center; color: #666;"></p>
                 </div>
             </div>
         </div>
@@ -512,31 +520,110 @@
             return div.innerHTML;
         }
 
-        function downloadAllInTabs() {
+        async function downloadAllAsZip() {
             if (scrapedLinks.length === 0) {
                 showAlert('No files to download', 'info');
                 return;
             }
 
-            if (scrapedLinks.length > 20) {
-                if (!confirm(`This will open ${scrapedLinks.length} download tabs. Your browser may block some. Continue?`)) {
-                    return;
+            // Show progress UI
+            const progressContainer = document.getElementById('download-progress');
+            const progressBar = document.getElementById('download-progress-bar');
+            const progressStatus = document.getElementById('download-status');
+            const zipBtn = document.getElementById('zip-btn');
+
+            progressContainer.style.display = 'block';
+            zipBtn.disabled = true;
+
+            try {
+                const zip = new JSZip();
+                let completed = 0;
+                let failed = 0;
+
+                progressStatus.textContent = 'Starting download...';
+
+                // Download all files and add to ZIP
+                for (let i = 0; i < scrapedLinks.length; i++) {
+                    const link = scrapedLinks[i];
+                    const progress = Math.round(((i + 1) / scrapedLinks.length) * 100);
+
+                    progressBar.style.width = progress + '%';
+                    progressBar.textContent = progress + '%';
+                    progressStatus.textContent = `Downloading ${i + 1} of ${scrapedLinks.length}: ${link.text.substring(0, 40)}...`;
+
+                    try {
+                        // Fetch file
+                        const response = await fetch(link.url, {
+                            mode: 'cors',
+                            cache: 'no-cache'
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+
+                        // Get file as blob
+                        const blob = await response.blob();
+
+                        // Generate filename
+                        const filename = link.url.split('/').pop().split('?')[0] || `file_${i + 1}.${link.extension}`;
+
+                        // Add to ZIP
+                        zip.file(filename, blob);
+                        completed++;
+
+                    } catch (error) {
+                        console.error(`Failed to download ${link.url}:`, error);
+                        failed++;
+                        // Continue with other files
+                    }
                 }
-            }
 
-            scrapedLinks.forEach((link, index) => {
+                if (completed === 0) {
+                    throw new Error('Could not download any files. Most files are blocked by CORS policy.');
+                }
+
+                // Generate ZIP file
+                progressStatus.textContent = 'Creating ZIP file...';
+                progressBar.style.width = '100%';
+                progressBar.textContent = '100%';
+
+                const zipBlob = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                });
+
+                // Trigger download
+                const url = URL.createObjectURL(zipBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `movar-scraped-files-${Date.now()}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                progressStatus.textContent = `✓ Downloaded ${completed} files as ZIP!${failed > 0 ? ` (${failed} failed)` : ''}`;
+
                 setTimeout(() => {
-                    const a = document.createElement('a');
-                    a.href = link.url;
-                    a.download = '';
-                    a.target = '_blank';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }, index * 300); // Stagger downloads
-            });
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }, 3000);
 
-            showAlert(`Started downloading ${scrapedLinks.length} files. Check your browser downloads!`, 'success');
+                showAlert(`Successfully downloaded ${completed} files as ZIP!${failed > 0 ? ` ${failed} files failed due to CORS restrictions.` : ''}`, 'success');
+
+            } catch (error) {
+                progressStatus.textContent = '✗ Download failed';
+                showAlert('Error: ' + error.message + '\n\nNote: Some websites block downloads due to CORS policy. Try "Copy All Links" instead.', 'error');
+
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }, 3000);
+            } finally {
+                zipBtn.disabled = false;
+            }
         }
 
         function copyAllLinks() {
