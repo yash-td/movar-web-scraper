@@ -1,0 +1,25 @@
+{
+  "name": "movar-web-scraper",
+  "version": "1.0.0",
+  "description": "Universal Web Scraper - Extract and download files from any webpage",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yash-td/movar-web-scraper.git"
+  },
+  "keywords": [
+    "scraper",
+    "downloader",
+    "web-scraper",
+    "netlify"
+  ],
+  "author": "ytkd",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12"
+  }
+}
